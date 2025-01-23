@@ -1,0 +1,10 @@
+^C:\CLASSWORK\SPRING_25\CSCE_441\LABS\L-1\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\cmake-3.31.4-windows-x86_64\bin\cmake.exe" -SC:/CLASSWORK/SPRING_25/CSCE_441/Labs/L-1 -BC:/CLASSWORK/SPRING_25/CSCE_441/Labs/L-1/build --check-stamp-file C:/CLASSWORK/SPRING_25/CSCE_441/Labs/L-1/build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
