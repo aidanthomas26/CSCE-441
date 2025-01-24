@@ -1,6 +1,3 @@
-﻿  Building Custom Rule C:/CLASSWORK/SPRING_25/CSCE_441/A1/CMakeLists.txt
-  Image.cpp
-  main.cpp
-C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(73,34): warning C4834: discarding return value of function with 'nodiscard' attribute
-  Generating Code...
+﻿  main.cpp
+C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(124,34): warning C4834: discarding return value of function with 'nodiscard' attribute
   A1.vcxproj -> C:\CLASSWORK\SPRING_25\CSCE_441\A1\builds\Debug\A1.exe
