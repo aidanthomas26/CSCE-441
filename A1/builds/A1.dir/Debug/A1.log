@@ -1,3 +1,7 @@
 ﻿  main.cpp
-C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(124,34): warning C4834: discarding return value of function with 'nodiscard' attribute
+C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(144,34): warning C4834: discarding return value of function with 'nodiscard' attribute
+C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(212,43): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(214,44): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(216,18): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(223,21): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
   A1.vcxproj -> C:\CLASSWORK\SPRING_25\CSCE_441\A1\builds\Debug\A1.exe

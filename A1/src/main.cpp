@@ -13,8 +13,16 @@
 using namespace std;
 
 
-struct Vec2 {
+struct Point {
 	float x, y;
+};
+
+struct Vertex {
+	float x, y, z;
+};
+
+struct Tri {
+	Vertex a, b, c;
 };
 
 double RANDOM_COLORS[7][3] = {
@@ -62,10 +70,16 @@ void computeBoundingBox(const vector<float>& posBuf, float& minX, float& minY, f
 	}
 }
 
-Vec2 projectToImage(float x, float y, float scale, const Vec2& translation) 
+Point projectToImage(float x, float y, float scale, const Point& translation) 
 {
 	return { scale * x + translation.x, scale * y + translation.y };
 }
+
+float edgeFunction(Vertex a, Vertex b, Vertex c) {
+	return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+}
+
+
 
 int main(int argc, char **argv)
 {
@@ -86,6 +100,10 @@ int main(int argc, char **argv)
 	vector<float> posBuf; // list of vertex positions
 	vector<float> norBuf; // list of vertex normals
 	vector<float> texBuf; // list of vertex texture coords
+	vector<Point> frameBuf; //buffer for each pixel colour
+	vector<Vertex> ZBuf; //buffer for each pixel z value
+	vector<Vertex> Vertices;
+	vector<Tri> Triangles;
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
@@ -129,42 +147,127 @@ int main(int argc, char **argv)
 	}
 	cout << "Number of vertices: " << posBuf.size()/3 << endl;
 
+	for (size_t i = 0; i < posBuf.size(); i += 3) 
+	{
+		Vertex temp;
+		temp.x = posBuf[i];
+		temp.y = posBuf[i + 1];
+		temp.z = posBuf[i + 2];
+		Vertices.push_back(temp);
+	}
+
+	for (size_t i = 0; i < posBuf.size(); i += 9)
+	{
+		Vertex temp1;
+		Vertex temp2;
+		Vertex temp3;
+		Tri angle;
+
+		temp1.x = posBuf[i];
+		temp1.y = posBuf[i + 1];
+		temp1.z = posBuf[i + 2];
+		temp2.x = posBuf[i + 3];
+		temp2.y = posBuf[i + 4];
+		temp2.z = posBuf[i + 5];
+		temp3.x = posBuf[i + 6];
+		temp3.y = posBuf[i + 7];
+		temp3.z = posBuf[i + 8];
+
+		angle = { temp1, temp2, temp3 };
+
+		Triangles.push_back(angle);
+	}
+
+
 	float minX, minY, maxX, maxY;
 	computeBoundingBox(posBuf, minX, minY, maxX, maxY);
 
 	float bboxWidth = maxX - minX;
 	float bboxHeight = maxY - minY;
-	float scale = std::min(static_cast<float>(imageWidth) / bboxWidth, static_cast<float>(imageHeight) / bboxHeight);
-	Vec2 translation = {
+	float scale = min(static_cast<float>(imageWidth) / bboxWidth, static_cast<float>(imageHeight) / bboxHeight);
+	Point translation = {
 		static_cast<float>(imageWidth) / 2.0f - scale * (minX + maxX) / 2.0f,
 		static_cast<float>(imageHeight) / 2.0f - scale * (minY + maxY) / 2.0f
 	};
 
-	std::vector<unsigned char> image(imageWidth * imageHeight * 3, 0);
+	vector<unsigned char> image(imageWidth * imageHeight * 3, 0);
 
-	for (size_t i = 0; i < posBuf.size(); i += 9) { // Iterate through triangles and assign colour
-		int colorIndex = (i / 9) % 7;
+	for (size_t i = 0; i < Triangles.size(); i++) { // Iterate through triangles and assign colour
+		int colorIndex = i % 7;
 		const auto& color = RANDOM_COLORS[colorIndex];
+		Vertex P = { 0, 0, 0 };
 
 		// Compute bounding box for the current triangle
 		float triMinX, triMinY, triMaxX, triMaxY;
-		computeTriangleBoundingBox(posBuf, i, triMinX, triMinY, triMaxX, triMaxY);
+		//computeTriangleBoundingBox(posBuf, i, triMinX, triMinY, triMaxX, triMaxY);
+		triMinX = min(min(Triangles[i].a.x, Triangles[i].b.x), Triangles[i].c.x);
+		triMinY = min(min(Triangles[i].a.y, Triangles[i].b.y), Triangles[i].c.y);
+		triMaxX = max(max(Triangles[i].a.x, Triangles[i].b.x), Triangles[i].c.x);
+		triMaxY = max(max(Triangles[i].a.y, Triangles[i].b.y), Triangles[i].c.y);
 
 		// Project bounding box corners
-		Vec2 projectedMin = projectToImage(triMinX, triMinY, scale, translation);
-		Vec2 projectedMax = projectToImage(triMaxX, triMaxY, scale, translation);
+		Point projectedMin = projectToImage(triMinX, triMinY, scale, translation);
+		Point projectedMax = projectToImage(triMaxX, triMaxY, scale, translation);
 
-		// Fill the bounding box area with color
-		for (int y = static_cast<int>(projectedMin.y); y <= static_cast<int>(projectedMax.y); ++y) {
-			for (int x = static_cast<int>(projectedMin.x); x <= static_cast<int>(projectedMax.x); ++x) {
-				if (x >= 0 && x < imageWidth && y >= 0 && y < imageHeight) {
-					int pixelIndex = (y * imageWidth + x) * 3;
+		for (P.y = static_cast<int>(projectedMin.y); P.y < static_cast<int>(projectedMax.y); P.y++)
+		{
+			for (P.x = static_cast<int>(projectedMin.x); P.x < static_cast<int>(projectedMax.x); P.x++)
+			{
+				int flippedY = imageHeight - 1 - P.y;
+				/*float ABP = edgeFunction(Triangles[i].a, Triangles[i].b, P);
+				float BCP = edgeFunction(Triangles[i].b, Triangles[i].c, P);
+				float CAP = edgeFunction(Triangles[i].c, Triangles[i].a, P);*/
+
+				if (P.x >= 0 && P.x < imageWidth && flippedY >= 0 && flippedY < imageHeight)
+				{
+					int pixelIndex = (flippedY * imageWidth + P.x) * 3;
 					image[pixelIndex] = static_cast<unsigned char>(color[0] * 255);
 					image[pixelIndex + 1] = static_cast<unsigned char>(color[1] * 255);
 					image[pixelIndex + 2] = static_cast<unsigned char>(color[2] * 255);
 				}
 			}
 		}
+
+		/*for (int y = static_cast<int>(projectedMin.y); y <= static_cast<int>(projectedMax.y); ++y) {
+			for (int x = static_cast<int>(projectedMin.x); x <= static_cast<int>(projectedMax.x); ++x) {
+				int flippedY = imageHeight - 1 - y; 
+				if (x >= 0 && x < imageWidth && flippedY >= 0 && flippedY < imageHeight) {
+					int pixelIndex = (flippedY * imageWidth + x) * 3;
+					image[pixelIndex] = static_cast<unsigned char>(color[0] * 255);
+					image[pixelIndex + 1] = static_cast<unsigned char>(color[1] * 255);
+					image[pixelIndex + 2] = static_cast<unsigned char>(color[2] * 255);
+				}
+			}
+		}*/
+	}
+
+	//init frame buffer to (0,0,0)
+	//init zbuf to -99999999999999999
+	//for all triangles
+	//	for all pixels in the tri bounding box
+	//		compute pixel's barycentric coords
+	//		if inside
+	//			compute pixel's z-coords (A.z * a + B.z * b + C.z + c)
+	//			compute pixel's RGB color
+	//			if z > curr z from Zbuffer
+	//				write RGB to Fbuf
+	//				write z to Zbuf
+	//			end
+	//		end
+	//	end
+	//end
+	//make sure to check if val at Zbuf is bigger when trying to draw overlapping points
+
+
+
+	if (task == 2)
+	{
+
+	}
+
+	if (task == 3)
+	{
+
 	}
 
 	if (stbi_write_png(outputName.c_str(), imageWidth, imageHeight, 3, image.data(), imageWidth * 3)) {
