@@ -75,10 +75,9 @@ Point projectToImage(float x, float y, float scale, const Point& translation)
 	return { scale * x + translation.x, scale * y + translation.y };
 }
 
-float edgeFunction(Vertex a, Vertex b, Vertex c) {
-	return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+float edgeFunction(const Vertex& a, const Vertex& b, const Vertex& c) {
+	return (c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x);
 }
-
 
 
 int main(int argc, char **argv)
@@ -195,36 +194,57 @@ int main(int argc, char **argv)
 	for (size_t i = 0; i < Triangles.size(); i++) { // Iterate through triangles and assign colour
 		int colorIndex = i % 7;
 		const auto& color = RANDOM_COLORS[colorIndex];
-		Vertex P = { 0, 0, 0 };
+
+		Point a = projectToImage(Triangles[i].a.x, Triangles[i].a.y, scale, translation);
+		Point b = projectToImage(Triangles[i].b.x, Triangles[i].b.y, scale, translation);
+		Point c = projectToImage(Triangles[i].c.x, Triangles[i].c.y, scale, translation);
 
 		// Compute bounding box for the current triangle
 		float triMinX, triMinY, triMaxX, triMaxY;
 		//computeTriangleBoundingBox(posBuf, i, triMinX, triMinY, triMaxX, triMaxY);
-		triMinX = min(min(Triangles[i].a.x, Triangles[i].b.x), Triangles[i].c.x);
-		triMinY = min(min(Triangles[i].a.y, Triangles[i].b.y), Triangles[i].c.y);
-		triMaxX = max(max(Triangles[i].a.x, Triangles[i].b.x), Triangles[i].c.x);
-		triMaxY = max(max(Triangles[i].a.y, Triangles[i].b.y), Triangles[i].c.y);
+		triMinX = min(min(a.x, b.x), c.x);
+		triMinY = min(min(a.y, b.y), c.y);
+		triMaxX = max(max(a.x, b.x), c.x);
+		triMaxY = max(max(a.y, b.y), c.y);
 
 		// Project bounding box corners
-		Point projectedMin = projectToImage(triMinX, triMinY, scale, translation);
-		Point projectedMax = projectToImage(triMaxX, triMaxY, scale, translation);
+		//Point projectedMin = projectToImage(triMinX, triMinY, scale, translation);
+		//Point projectedMax = projectToImage(triMaxX, triMaxY, scale, translation);
 
-		for (P.y = static_cast<int>(projectedMin.y); P.y < static_cast<int>(projectedMax.y); P.y++)
+		for (int y = static_cast<int>(triMinY); y < static_cast<int>(triMaxY); y++)
 		{
-			for (P.x = static_cast<int>(projectedMin.x); P.x < static_cast<int>(projectedMax.x); P.x++)
+			for (int x = static_cast<int>(triMinX); x < static_cast<int>(triMaxX); x++)
 			{
-				int flippedY = imageHeight - 1 - P.y;
-				/*float ABP = edgeFunction(Triangles[i].a, Triangles[i].b, P);
-				float BCP = edgeFunction(Triangles[i].b, Triangles[i].c, P);
-				float CAP = edgeFunction(Triangles[i].c, Triangles[i].a, P);*/
+				Vertex pixel = { static_cast<float>(x), static_cast<float>(y), 0.0f };
+				float ABP = edgeFunction(Vertex{ a.x, a.y, 0.0f }, Vertex{ b.x, b.y, 0.0f }, pixel);
+				float BCP = edgeFunction(Vertex{ b.x, b.y, 0.0f }, Vertex{ c.x, c.y, 0.0f }, pixel);
+				float CAP = edgeFunction(Vertex{ c.x, c.y, 0.0f }, Vertex{ a.x, a.y, 0.0f }, pixel);
 
-				if (P.x >= 0 && P.x < imageWidth && flippedY >= 0 && flippedY < imageHeight)
+				int flippedY = imageHeight - 1 - y;
+				if (x >= 0 && x < imageWidth && flippedY >= 0 && flippedY < imageHeight && task == 1)
+				{
+					int pixelIndex = (flippedY * imageWidth + x) * 3;
+					image[pixelIndex] = static_cast<unsigned char>(color[0] * 255);
+					image[pixelIndex + 1] = static_cast<unsigned char>(color[1] * 255);
+					image[pixelIndex + 2] = static_cast<unsigned char>(color[2] * 255);
+				}
+
+
+				if (ABP >= -1e-5 && BCP >= -1e-5 && CAP >= -1e-5)
+				{
+					int pixelIndex = (flippedY * imageWidth + x) * 3;
+					image[pixelIndex] = static_cast<unsigned char>(color[0] * 255);
+					image[pixelIndex + 1] = static_cast<unsigned char>(color[1] * 255);
+					image[pixelIndex + 2] = static_cast<unsigned char>(color[2] * 255);
+				}
+
+				/*if (P.x >= 0 && P.x < imageWidth && flippedY >= 0 && flippedY < imageHeight)
 				{
 					int pixelIndex = (flippedY * imageWidth + P.x) * 3;
 					image[pixelIndex] = static_cast<unsigned char>(color[0] * 255);
 					image[pixelIndex + 1] = static_cast<unsigned char>(color[1] * 255);
 					image[pixelIndex + 2] = static_cast<unsigned char>(color[2] * 255);
-				}
+				}*/
 			}
 		}
 
@@ -259,16 +279,6 @@ int main(int argc, char **argv)
 	//make sure to check if val at Zbuf is bigger when trying to draw overlapping points
 
 
-
-	if (task == 2)
-	{
-
-	}
-
-	if (task == 3)
-	{
-
-	}
 
 	if (stbi_write_png(outputName.c_str(), imageWidth, imageHeight, 3, image.data(), imageWidth * 3)) {
 		cout << "Output written to " << outputName << "\n";
