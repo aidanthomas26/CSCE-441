@@ -35,6 +35,9 @@ double RANDOM_COLORS[7][3] = {
 	{0.6350,    0.0780,    0.1840},
 };
 
+
+Vertex vertexColors[100000];
+
 //function to compute the bounding box for 3 vertices as a triangle
 void computeTriangleBoundingBox(const vector<float>& posBuf, size_t startIdx, float& minX, float& minY, float& maxX, float& maxY) {
 	minX = posBuf[startIdx];
@@ -76,7 +79,7 @@ Point projectToImage(float x, float y, float scale, const Point& translation)
 }
 
 float edgeFunction(const Vertex& a, const Vertex& b, const Vertex& c) {
-	return (c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x);
+	return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 }
 
 
@@ -145,6 +148,7 @@ int main(int argc, char **argv)
 		}
 	}
 	cout << "Number of vertices: " << posBuf.size()/3 << endl;
+
 
 	for (size_t i = 0; i < posBuf.size(); i += 3) 
 	{
@@ -230,7 +234,7 @@ int main(int argc, char **argv)
 				}
 
 
-				if (ABP >= -1e-5 && BCP >= -1e-5 && CAP >= -1e-5)
+				if (ABP >= -1e-5 && BCP >= -1e-5 && CAP >= -1e-5 && task == 2)
 				{
 					int pixelIndex = (flippedY * imageWidth + x) * 3;
 					image[pixelIndex] = static_cast<unsigned char>(color[0] * 255);
@@ -238,13 +242,63 @@ int main(int argc, char **argv)
 					image[pixelIndex + 2] = static_cast<unsigned char>(color[2] * 255);
 				}
 
-				/*if (P.x >= 0 && P.x < imageWidth && flippedY >= 0 && flippedY < imageHeight)
+				if (ABP >= -1e-5 && BCP >= -1e-5 && CAP >= -1e-5 && task == 3) {
+
+					/*int vertexCount = 0;
+					int indx1 = vertexCount+2;
+					int indx2 = vertexCount;
+					int indx3 = vertexCount+1;
+					vertexCount += 3;*/
+
+					int vertexCount = (i * 9)/3;
+
+					int indx1 = vertexCount + 2;
+					int indx2 = vertexCount;
+					int indx3 = vertexCount + 1;
+
+					if (i == 1)
+					{
+						indx1 = 2;
+						indx2 = 0;
+						indx3 = 1;
+					}
+					
+					float rA = RANDOM_COLORS[indx1%7][0];
+					float gA = RANDOM_COLORS[indx1%7][1]; 
+					float bA = RANDOM_COLORS[indx1%7][2];
+
+					float rB = RANDOM_COLORS[indx2%7][0]; 
+					float gB = RANDOM_COLORS[indx2%7][1]; 
+					float bB = RANDOM_COLORS[indx2%7][2]; 
+
+					float rC = RANDOM_COLORS[indx3%7][0]; 
+					float gC = RANDOM_COLORS[indx3%7][1];
+					float bC = RANDOM_COLORS[indx3%7][2];
+
+					// Interpolate color using barycentric coordinates
+					float alpha = ABP / (ABP + BCP + CAP);
+					float beta = BCP / (ABP + BCP + CAP);
+					float gamma = CAP / (ABP + BCP + CAP);
+
+					// Interpolate vertex colors
+					float r = alpha * rA + beta * rB + gamma * rC;
+					float g = alpha * gA + beta * gB + gamma * gC;
+					float b = alpha * bA + beta * bB + gamma * bC;
+
+					int pixelIndex = (flippedY * imageWidth + x) * 3;
+					image[pixelIndex] = static_cast<unsigned char>(r * 255);
+					image[pixelIndex + 1] = static_cast<unsigned char>(g * 255);
+					image[pixelIndex + 2] = static_cast<unsigned char>(b * 255);
+				}
+
+				if (ABP >= -1e-5 && BCP >= -1e-5 && CAP >= -1e-5 && task == 4)
 				{
-					int pixelIndex = (flippedY * imageWidth + P.x) * 3;
+					int pixelIndex = (flippedY * imageWidth + x) * 3;
 					image[pixelIndex] = static_cast<unsigned char>(color[0] * 255);
 					image[pixelIndex + 1] = static_cast<unsigned char>(color[1] * 255);
 					image[pixelIndex + 2] = static_cast<unsigned char>(color[2] * 255);
-				}*/
+				}
+
 			}
 		}
 
