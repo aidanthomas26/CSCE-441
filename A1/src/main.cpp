@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <algorithm>
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
@@ -19,7 +20,10 @@ struct Point {
 
 struct Vertex {
 	float x, y, z;
+	float nx, ny, nz;
 };
+
+
 
 struct Tri {
 	Vertex a, b, c;
@@ -36,7 +40,12 @@ double RANDOM_COLORS[7][3] = {
 };
 
 
-Vertex vertexColors[100000];
+float globalMinY = FLT_MAX;
+float globalMaxY = -FLT_MAX;
+
+float globalMinZ = numeric_limits<float>::max();
+float globalMaxZ = numeric_limits<float>::lowest();
+
 
 //function to compute the bounding box for 3 vertices as a triangle
 void computeTriangleBoundingBox(const vector<float>& posBuf, size_t startIdx, float& minX, float& minY, float& maxX, float& maxY) {
@@ -72,6 +81,8 @@ void computeBoundingBox(const vector<float>& posBuf, float& minX, float& minY, f
 		if (y > maxY) maxY = y;
 	}
 }
+
+
 
 Point projectToImage(float x, float y, float scale, const Point& translation) 
 {
@@ -149,16 +160,23 @@ int main(int argc, char **argv)
 	}
 	cout << "Number of vertices: " << posBuf.size()/3 << endl;
 
+	vector<float> zBuffer(imageWidth * imageHeight, numeric_limits<float>::max());
 
+	//populate Vertices vector
 	for (size_t i = 0; i < posBuf.size(); i += 3) 
 	{
 		Vertex temp;
 		temp.x = posBuf[i];
 		temp.y = posBuf[i + 1];
 		temp.z = posBuf[i + 2];
+		temp.nx = norBuf[i];
+		temp.ny = norBuf[i + 1];
+		temp.nz = norBuf[i + 2];
 		Vertices.push_back(temp);
 	}
 
+
+	//populate triangles vector
 	for (size_t i = 0; i < posBuf.size(); i += 9)
 	{
 		Vertex temp1;
@@ -175,6 +193,16 @@ int main(int argc, char **argv)
 		temp3.x = posBuf[i + 6];
 		temp3.y = posBuf[i + 7];
 		temp3.z = posBuf[i + 8];
+
+		temp1.nx = norBuf[i];
+		temp1.ny = norBuf[i + 1];
+		temp1.nz = norBuf[i + 2];
+		temp2.nx = norBuf[i + 3];
+		temp2.ny = norBuf[i + 4];
+		temp2.nz = norBuf[i + 5];
+		temp3.nx = norBuf[i + 6];
+		temp3.ny = norBuf[i + 7];
+		temp3.nz = norBuf[i + 8];
 
 		angle = { temp1, temp2, temp3 };
 
@@ -195,13 +223,48 @@ int main(int argc, char **argv)
 
 	vector<unsigned char> image(imageWidth * imageHeight * 3, 0);
 
-	for (size_t i = 0; i < Triangles.size(); i++) { // Iterate through triangles and assign colour
+	//loop get object bounding box after translation
+	for (size_t i = 0; i < Triangles.size(); i++) {
+		Point a = projectToImage(Triangles[i].a.x, Triangles[i].a.y, scale, translation);
+		Point b = projectToImage(Triangles[i].b.x, Triangles[i].b.y, scale, translation);
+		Point c = projectToImage(Triangles[i].c.x, Triangles[i].c.y, scale, translation);
+
+		globalMinY = min(min(min(globalMinY, a.y), b.y), c.y);
+		globalMaxY = max(max(max(globalMaxY, a.y), b.y), c.y);
+	}
+
+	//loop get global min and max Z values
+	for (const auto& triangle : Triangles) {
+		globalMinZ = min(min(min(globalMinZ, triangle.a.z), triangle.b.z), triangle.c.z);
+		globalMaxZ = max(max(max(globalMaxZ, triangle.a.z), triangle.b.z), triangle.c.z);
+	}
+
+	for (size_t i = 0; i < Triangles.size(); i++) {
 		int colorIndex = i % 7;
 		const auto& color = RANDOM_COLORS[colorIndex];
 
 		Point a = projectToImage(Triangles[i].a.x, Triangles[i].a.y, scale, translation);
 		Point b = projectToImage(Triangles[i].b.x, Triangles[i].b.y, scale, translation);
 		Point c = projectToImage(Triangles[i].c.x, Triangles[i].c.y, scale, translation);
+
+		float zA = Triangles[i].a.z;
+		float zB = Triangles[i].b.z;
+		float zC = Triangles[i].c.z;
+
+		float nxA = Triangles[i].a.nx;
+		float nyA = Triangles[i].a.ny;
+		float nzA = Triangles[i].a.nz;
+
+		float nxB = Triangles[i].b.nx;
+		float nyB = Triangles[i].b.ny;
+		float nzB = Triangles[i].b.nz;
+
+		float nxC = Triangles[i].c.nx;
+		float nyC = Triangles[i].c.ny;
+		float nzC = Triangles[i].c.nz;
+
+		cout << Vertices[i].nx << " " << Vertices[i].ny << " " << Vertices[i].nz << endl;
+		cout << Triangles[i].a.nx << endl;
 
 		// Compute bounding box for the current triangle
 		float triMinX, triMinY, triMaxX, triMaxY;
@@ -211,9 +274,6 @@ int main(int argc, char **argv)
 		triMaxX = max(max(a.x, b.x), c.x);
 		triMaxY = max(max(a.y, b.y), c.y);
 
-		// Project bounding box corners
-		//Point projectedMin = projectToImage(triMinX, triMinY, scale, translation);
-		//Point projectedMax = projectToImage(triMaxX, triMaxY, scale, translation);
 
 		for (int y = static_cast<int>(triMinY); y < static_cast<int>(triMaxY); y++)
 		{
@@ -293,12 +353,73 @@ int main(int argc, char **argv)
 
 				if (ABP >= -1e-5 && BCP >= -1e-5 && CAP >= -1e-5 && task == 4)
 				{
+					float normalizedY = (flippedY - globalMinY) / (globalMaxY - globalMinY);
+					normalizedY = max(0.0f, min(1.0f, normalizedY));
+
+
+					float red = 255 * (1 - normalizedY);  
+					float blue = 255 * normalizedY;  
+					float green = 0.0f;
+
+
+
 					int pixelIndex = (flippedY * imageWidth + x) * 3;
-					image[pixelIndex] = static_cast<unsigned char>(color[0] * 255);
-					image[pixelIndex + 1] = static_cast<unsigned char>(color[1] * 255);
-					image[pixelIndex + 2] = static_cast<unsigned char>(color[2] * 255);
+					image[pixelIndex] = static_cast<unsigned char>(red);
+					image[pixelIndex + 1] = static_cast<unsigned char>(green);
+					image[pixelIndex + 2] = static_cast<unsigned char>(blue);
 				}
 
+				if (ABP >= -1e-5 && BCP >= -1e-5 && CAP >= -1e-5 && task == 5)
+				{
+					float alpha = ABP / (ABP + BCP + CAP);
+					float beta = BCP / (ABP + BCP + CAP);
+					float gamma = CAP / (ABP + BCP + CAP);
+
+					float z = alpha * zA + beta * zB + gamma * zC;
+
+					int pixelIndex = (flippedY * imageWidth + x);
+					if (z < zBuffer[pixelIndex]) {
+						zBuffer[pixelIndex] = z;
+
+						float normalizedZ = (z - globalMinZ) / (globalMaxZ - globalMinZ);
+						normalizedZ = clamp(normalizedZ, 0.0f, 1.0f);
+						unsigned char red = static_cast<unsigned char>(normalizedZ * 255);
+
+						int colorIndex = pixelIndex * 3;
+						image[colorIndex] = red;
+						image[colorIndex + 1] = 0;
+						image[colorIndex + 2] = 0;
+					}
+				}
+
+				if (ABP >= -1e-5 && BCP >= -1e-5 && CAP >= -1e-5 && task == 6)
+				{
+					float alpha = ABP / (ABP + BCP + CAP);
+					float beta = BCP / (ABP + BCP + CAP);
+					float gamma = CAP / (ABP + BCP + CAP);
+
+					// Interpolate normals
+					float nx = alpha * nxA + beta * nxB + gamma * nxC;
+					float ny = alpha * nyA + beta * nyB + gamma * nyC;
+					float nz = alpha * nzA + beta * nzB + gamma * nzC;
+
+					//cout << nx << " " << ny << " " << nz << endl;
+
+					// Map interpolated normal to RGB values
+					unsigned char r = static_cast<unsigned char>(255 * (0.5f * nx + 0.5f));
+					unsigned char g = static_cast<unsigned char>(255 * (0.5f * ny + 0.5f));
+					unsigned char b = static_cast<unsigned char>(255 * (0.5f * nz + 0.5f));
+
+					int pixelIndex = (flippedY * imageWidth + x) * 3;
+					image[pixelIndex] = r;
+					image[pixelIndex + 1] = g;
+					image[pixelIndex + 2] = b;
+				}
+
+				if (ABP >= -1e-5 && BCP >= -1e-5 && CAP >= -1e-5 && task == 7) 
+				{
+
+				}
 			}
 		}
 
