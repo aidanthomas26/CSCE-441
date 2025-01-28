@@ -82,6 +82,17 @@ void computeBoundingBox(const vector<float>& posBuf, float& minX, float& minY, f
 	}
 }
 
+float dot(float x1, float y1, float z1, float x2, float y2, float z2) {
+	return (x1 * x2) + (y1 * y2) + (z1 * z2);
+}
+
+//float normalize(Vertex& v) {
+//	float magnitude = sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+//	v.x /= magnitude;
+//	v.y /= magnitude;
+//	v.z /= magnitude;
+//	return magnitude;
+//}
 
 
 Point projectToImage(float x, float y, float scale, const Point& translation) 
@@ -93,6 +104,16 @@ float edgeFunction(const Vertex& a, const Vertex& b, const Vertex& c) {
 	return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 }
 
+void rotateY(Vertex& v, float theta) {
+	float cosTheta = cos(theta);
+	float sinTheta = sin(theta);
+
+	float xNew = cosTheta * v.x + sinTheta * v.z;
+	float zNew = -sinTheta * v.x + cosTheta * v.z;
+
+	v.x = xNew;
+	v.z = zNew;
+}
 
 int main(int argc, char **argv)
 {
@@ -117,6 +138,7 @@ int main(int argc, char **argv)
 	vector<Vertex> ZBuf; //buffer for each pixel z value
 	vector<Vertex> Vertices;
 	vector<Tri> Triangles;
+	float theta = 3.14 / 4.0f;
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
@@ -263,16 +285,30 @@ int main(int argc, char **argv)
 		float nyC = Triangles[i].c.ny;
 		float nzC = Triangles[i].c.nz;
 
-		cout << Vertices[i].nx << " " << Vertices[i].ny << " " << Vertices[i].nz << endl;
-		cout << Triangles[i].a.nx << endl;
 
 		// Compute bounding box for the current triangle
 		float triMinX, triMinY, triMaxX, triMaxY;
 		//computeTriangleBoundingBox(posBuf, i, triMinX, triMinY, triMaxX, triMaxY);
-		triMinX = min(min(a.x, b.x), c.x);
-		triMinY = min(min(a.y, b.y), c.y);
-		triMaxX = max(max(a.x, b.x), c.x);
-		triMaxY = max(max(a.y, b.y), c.y);
+		triMinX = floor(min(min(a.x, b.x), c.x));
+		triMinY = floor(min(min(a.y, b.y), c.y));
+		triMaxX = ceil(max(max(a.x, b.x), c.x));
+		triMaxY = ceil(max(max(a.y, b.y), c.y));
+		/*if (triMinY < 0)
+		{
+			triMinY = 0;
+		}
+		if (triMinX < 0)
+		{
+			triMinX = 0;
+		}
+		if (triMaxY > (triMaxY-triMinY) - 1)
+		{
+			triMaxY = (triMaxY - triMinY) - 1;
+		}
+		if (triMaxX > (triMaxX - triMinX) - 1)
+		{
+			triMaxX = (triMaxX - triMinX) - 1;
+		}*/
 
 
 		for (int y = static_cast<int>(triMinY); y < static_cast<int>(triMaxY); y++)
@@ -403,7 +439,6 @@ int main(int argc, char **argv)
 					float ny = alpha * nyA + beta * nyB + gamma * nyC;
 					float nz = alpha * nzA + beta * nzB + gamma * nzC;
 
-					//cout << nx << " " << ny << " " << nz << endl;
 
 					// Map interpolated normal to RGB values
 					unsigned char r = static_cast<unsigned char>(255 * (0.5f * nx + 0.5f));
@@ -418,7 +453,46 @@ int main(int argc, char **argv)
 
 				if (ABP >= -1e-5 && BCP >= -1e-5 && CAP >= -1e-5 && task == 7) 
 				{
+					float alpha = ABP / (ABP + BCP + CAP);
+					float beta = BCP / (ABP + BCP + CAP);
+					float gamma = CAP / (ABP + BCP + CAP);
 
+					float nx = alpha * nxA + beta * nxB + gamma * nxC;
+					float ny = alpha * nyA + beta * nyB + gamma * nyC;
+					float nz = alpha * nzA + beta * nzB + gamma * nzC;
+
+					Vertex n = { nx, ny, nz };
+					Vertex l = { 1.0f / sqrt(3.0f), 1.0f / sqrt(3.0f), 1.0f / sqrt(3.0f) };
+					float dotProduct = dot(l.x, l.y, l.z, n.x, n.y, n.z);
+					float c = max(dotProduct, 0.0f);
+					unsigned char rgb = static_cast<unsigned char>(255 * c);
+
+					int pixelIndex = (flippedY * imageWidth + x) * 3;
+					image[pixelIndex] = rgb;
+					image[pixelIndex + 1] = rgb;
+					image[pixelIndex + 2] = rgb;
+				}
+
+				if (ABP >= -1e-5 && BCP >= -1e-5 && CAP >= -1e-5 && task == 8)
+				{
+					float alpha = ABP / (ABP + BCP + CAP);
+					float beta = BCP / (ABP + BCP + CAP);
+					float gamma = CAP / (ABP + BCP + CAP);
+
+					float nx = alpha * nxA + beta * nxB + gamma * nxC;
+					float ny = alpha * nyA + beta * nyB + gamma * nyC;
+					float nz = alpha * nzA + beta * nzB + gamma * nzC;
+
+					Vertex n = { nx, ny, nz };
+					Vertex l = { 1.0f / sqrt(3.0f), 1.0f / sqrt(3.0f), 1.0f / sqrt(3.0f) };
+					float dotProduct = dot(l.x, l.y, l.z, n.x, n.y, n.z);
+					float c = max(dotProduct, 0.0f);
+					unsigned char rgb = static_cast<unsigned char>(255 * c);
+
+					int pixelIndex = (flippedY * imageWidth + x) * 3;
+					image[pixelIndex] = rgb;
+					image[pixelIndex + 1] = rgb;
+					image[pixelIndex + 2] = rgb;
 				}
 			}
 		}
