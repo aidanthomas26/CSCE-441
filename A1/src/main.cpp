@@ -104,16 +104,17 @@ float edgeFunction(const Vertex& a, const Vertex& b, const Vertex& c) {
 	return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 }
 
-void rotateY(Vertex& v, float theta) {
+void rotate(float& x, float& y, float& z, float theta) {
 	float cosTheta = cos(theta);
 	float sinTheta = sin(theta);
 
-	float xNew = cosTheta * v.x + sinTheta * v.z;
-	float zNew = -sinTheta * v.x + cosTheta * v.z;
+	float xNew = cosTheta * x + sinTheta * z;
+	float zNew = -sinTheta * x + cosTheta * z;
 
-	v.x = xNew;
-	v.z = zNew;
+	x = xNew;
+	z = zNew;
 }
+
 
 int main(int argc, char **argv)
 {
@@ -231,7 +232,7 @@ int main(int argc, char **argv)
 		Triangles.push_back(angle);
 	}
 
-
+	
 	float minX, minY, maxX, maxY;
 	computeBoundingBox(posBuf, minX, minY, maxX, maxY);
 
@@ -244,6 +245,7 @@ int main(int argc, char **argv)
 	};
 
 	vector<unsigned char> image(imageWidth * imageHeight * 3, 0);
+
 
 	//loop get object bounding box after translation
 	for (size_t i = 0; i < Triangles.size(); i++) {
@@ -265,9 +267,22 @@ int main(int argc, char **argv)
 		int colorIndex = i % 7;
 		const auto& color = RANDOM_COLORS[colorIndex];
 
+		if (task == 8)
+		{
+			rotate(Triangles[i].a.x, Triangles[i].a.y, Triangles[i].a.z, theta);
+			rotate(Triangles[i].a.nx, Triangles[i].a.ny, Triangles[i].a.nz, theta);
+
+			rotate(Triangles[i].b.x, Triangles[i].b.y, Triangles[i].b.z, theta);
+			rotate(Triangles[i].b.nx, Triangles[i].b.ny, Triangles[i].b.nz, theta);
+
+			rotate(Triangles[i].c.x, Triangles[i].c.y, Triangles[i].c.z, theta);
+			rotate(Triangles[i].c.nx, Triangles[i].c.ny, Triangles[i].c.nz, theta);
+		}
+
 		Point a = projectToImage(Triangles[i].a.x, Triangles[i].a.y, scale, translation);
 		Point b = projectToImage(Triangles[i].b.x, Triangles[i].b.y, scale, translation);
 		Point c = projectToImage(Triangles[i].c.x, Triangles[i].c.y, scale, translation);
+
 
 		float zA = Triangles[i].a.z;
 		float zB = Triangles[i].b.z;

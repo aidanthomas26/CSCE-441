@@ -1,13 +1,14 @@
 ﻿  main.cpp
-C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(142,16): error C2065: 'M_PI': undeclared identifier
+C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(142,27): warning C4305: 'initializing': truncation from 'double' to 'float'
 C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(180,34): warning C4834: discarding return value of function with 'nodiscard' attribute
-C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(350,33): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(363,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(364,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(365,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(367,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(368,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(369,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(371,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(372,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(373,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(364,33): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(377,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(378,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(379,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(381,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(382,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(383,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(385,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(386,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\CLASSWORK\SPRING_25\CSCE_441\A1\src\main.cpp(387,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  A1.vcxproj -> C:\CLASSWORK\SPRING_25\CSCE_441\A1\builds\Debug\A1.exe
