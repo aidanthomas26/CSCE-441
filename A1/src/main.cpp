@@ -386,12 +386,11 @@ int main(int argc, char **argv)
 					float gC = RANDOM_COLORS[indx3%7][1];
 					float bC = RANDOM_COLORS[indx3%7][2];
 
-					// Interpolate color using barycentric coordinates
+					//for this barycentric calculation and anywhere else appearing, I asked chatGPT to give me the equation
 					float alpha = ABP / (ABP + BCP + CAP);
 					float beta = BCP / (ABP + BCP + CAP);
 					float gamma = CAP / (ABP + BCP + CAP);
 
-					// Interpolate vertex colors
 					float r = alpha * rA + beta * rB + gamma * rC;
 					float g = alpha * gA + beta * gB + gamma * gC;
 					float b = alpha * bA + beta * bB + gamma * bC;
