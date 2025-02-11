@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\CLASSWORK\SPRING_25\CSCE_441\A2\build\CMakeFiles\5eb53a617b64478587e82ad528ab7578\INSTALL_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{B7CD407E-14D9-3938-9D91-7F60F0B40CBF}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

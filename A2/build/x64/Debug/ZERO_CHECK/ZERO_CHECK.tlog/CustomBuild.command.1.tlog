@@ -1,0 +1,10 @@
+^C:\CLASSWORK\SPRING_25\CSCE_441\A2\BUILD\CMAKEFILES\5EB53A617B64478587E82AD528AB7578\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\cmake-3.31.4-windows-x86_64\bin\cmake.exe" -SC:/CLASSWORK/SPRING_25/CSCE_441/A2 -BC:/CLASSWORK/SPRING_25/CSCE_441/A2/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/CLASSWORK/SPRING_25/CSCE_441/A2/build/A2.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

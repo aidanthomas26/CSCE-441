@@ -1,0 +1,4 @@
+﻿  main.cpp
+C:\CLASSWORK\SPRING_25\CSCE_441\A2\src\main.cpp(57,84): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\CLASSWORK\SPRING_25\CSCE_441\A2\src\main.cpp(250,20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  A2.vcxproj -> C:\CLASSWORK\SPRING_25\CSCE_441\A2\build\Debug\A2.exe

@@ -1,0 +1,10 @@
+C:/CLASSWORK/SPRING_25/CSCE_441/A2/build/CMakeFiles/A2.dir
+C:/CLASSWORK/SPRING_25/CSCE_441/A2/build/CMakeFiles/INSTALL.dir
+C:/CLASSWORK/SPRING_25/CSCE_441/A2/build/CMakeFiles/ALL_BUILD.dir
+C:/CLASSWORK/SPRING_25/CSCE_441/A2/build/CMakeFiles/ZERO_CHECK.dir
+C:/CLASSWORK/SPRING_25/CSCE_450/glfw-3.4/debug/CMakeFiles/uninstall.dir
+C:/CLASSWORK/SPRING_25/CSCE_450/glfw-3.4/debug/CMakeFiles/INSTALL.dir
+C:/CLASSWORK/SPRING_25/CSCE_450/glfw-3.4/debug/CMakeFiles/ALL_BUILD.dir
+C:/CLASSWORK/SPRING_25/CSCE_450/glfw-3.4/debug/src/CMakeFiles/glfw.dir
+C:/CLASSWORK/SPRING_25/CSCE_450/glfw-3.4/debug/src/CMakeFiles/update_mappings.dir
+C:/CLASSWORK/SPRING_25/CSCE_450/glfw-3.4/debug/src/CMakeFiles/INSTALL.dir
